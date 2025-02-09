@@ -5,22 +5,16 @@
     --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--background);
     line-height: 1.6;
+    padding: 20px;
 }
 
 .container {
     max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 20px;
+    margin: 0 auto;
 }
 
 h1 {
@@ -28,10 +22,6 @@ h1 {
     color: var(--primary);
     margin-bottom: 2rem;
     font-size: 2.5rem;
-}
-
-h1 i {
-    margin-right: 10px;
 }
 
 .metrics-grid {
@@ -51,7 +41,7 @@ h1 i {
 }
 
 .metric-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 .metric-header {
@@ -68,7 +58,7 @@ h1 i {
 }
 
 .metric-value {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 700;
     color: var(--primary);
     margin-bottom: 0.5rem;
@@ -79,14 +69,15 @@ h1 i {
     font-size: 0.9rem;
 }
 
-.footer {
+.network-info {
     text-align: center;
     padding: 1rem;
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.8;
 }
 
 #connection-type {
-    margin-bottom: 0.5rem;
     font-weight: 600;
+    color: var(--primary);
 }
