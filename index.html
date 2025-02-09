@@ -3,48 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Network Monitor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <title>Network Monitor</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            background: var(--background);
+        }
+        .metric {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .value {
+            color: var(--secondary);
+            font-size: 1.5em;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-tachometer-alt"></i> Live Network Statistics</h1>
-        
-        <div class="metrics-grid">
-            <div class="metric-card" id="download-card">
-                <div class="metric-header">
-                    <i class="fas fa-download"></i>
-                    <h2>Download</h2>
-                </div>
-                <div class="metric-value" id="download-speed">-</div>
-                <div class="metric-subtext">Mbps</div>
-            </div>
+    <h1>Network Information API Demo</h1>
+    
+    <div class="metric">
+        <div>Connection Type:</div>
+        <div class="value" id="type"></div>
+    </div>
+    
+    <div class="metric">
+        <div>Effective Type:</div>
+        <div class="value" id="effectiveType"></div>
+    </div>
 
-            <div class="metric-card" id="upload-card">
-                <div class="metric-header">
-                    <i class="fas fa-upload"></i>
-                    <h2>Upload</h2>
-                </div>
-                <div class="metric-value" id="upload-speed">-</div>
-                <div class="metric-subtext">Mbps</div>
-            </div>
+    <div class="metric">
+        <div>Downlink (Mbps):</div>
+        <div class="value" id="downlink"></div>
+    </div>
 
-            <div class="metric-card" id="latency-card">
-                <div class="metric-header">
-                    <i class="fas fa-signal"></i>
-                    <h2>Latency</h2>
-                </div>
-                <div class="metric-value" id="latency">-</div>
-                <div class="metric-subtext">ms</div>
-            </div>
-        </div>
+    <div class="metric">
+        <div>Round Trip Time (ms):</div>
+        <div class="value" id="rtt"></div>
+    </div>
 
-        <div class="network-info">
-            <div id="connection-type">Loading connection info...</div>
-            <div id="max-speed">Max theoretical speed: -</div>
-            <div id="last-updated">Last updated: -</div>
-        </div>
+    <div class="metric">
+        <div>Maximum Downlink:</div>
+        <div class="value" id="downlinkMax"></div>
     </div>
 
     <script src="script.js"></script>
