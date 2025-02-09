@@ -1,30 +1,26 @@
-// Check if the browser supports the Network Information API
-if ('connection' in navigator && 'effectiveType' in navigator.connection) {
-    // Initial check
-    updateMetrics();
+function updateMetrics() {
+    // Check if the Network Information API is supported
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
-    // Update every 5 seconds
-    setInterval(updateMetrics, 5000);
+    if (connection) {
+        // Only update metrics if values are available
+        const downloadSpeed = connection.downlink ?? 'Unavailable';
+        const latency = connection.rtt ?? 'Unavailable';
 
-    // Listen for network changes
-    navigator.connection.addEventListener('change', updateMetrics);
-} else {
-    alert("Your browser doesn't support the Network Information API. Try Chrome or Edge.");
+        document.getElementById('download-speed').textContent = 
+            downloadSpeed !== 'Unavailable' ? `${downloadSpeed.toFixed(2)} Mbps` : downloadSpeed;
+
+        document.getElementById('latency').textContent = 
+            latency !== 'Unavailable' ? `${latency} ms` : latency;
+    }
 }
 
-function updateMetrics() {
-    const connection = navigator.connection;
-
-    // Download speed (in Mbps)
-    const downloadSpeed = connection.downlink || 0;
-    document.getElementById('download-speed').textContent = `${downloadSpeed.toFixed(2)} Mbps`;
-
-    // Latency (in milliseconds)
-    const latency = connection.rtt || 0;
-    document.getElementById('latency').textContent = `${latency} ms`;
-
-    // Estimate upload speed (not directly supported; hacky workaround)
-    // Note: This is a simplified placeholder. Real upload tests require server-side code.
-    const uploadSpeed = Math.random() * 5; // Simulate a small value
-    document.getElementById('upload-speed').textContent = `${uploadSpeed.toFixed(2)} Mbps`;
+// Check for API support ONCE and start updates
+if ('connection' in navigator) {
+    // Initial update and auto-refresh
+    updateMetrics();
+    setInterval(updateMetrics, 5000);
+    
+    // Detect network changes (per API spec)
+    navigator.connection.addEventListener('change', updateMetrics);
 }
