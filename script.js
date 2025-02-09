@@ -1,100 +1,114 @@
 class NetworkMonitor {
     constructor() {
         this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        this.init();
-    }
-
-    init() {
         if (!this.connection) {
             this.handleUnsupportedBrowser();
             return;
         }
-
-        this.setupEventListeners();
-        this.updateMetrics();
-        this.startAutoRefresh();
-    }
-
-    setupEventListeners() {
-        this.connection.addEventListener('change', () => {
-            this.updateMetrics();
-            this.animateMetricUpdate();
-        });
-    }
-
-    startAutoRefresh() {
-        setInterval(() => {
-            this.updateMetrics();
-        }, 3000);  // Update every 3 seconds
-    }
-
-    updateMetrics() {
-        const now = new Date().toLocaleTimeString();
-        document.getElementById('update-status').textContent = `Last updated: ${now}`;
         
-        // Core metrics from Network API
-        const downloadSpeed = this.connection.downlink;
-        const latency = this.connection.rtt;
-        const connectionType = this.connection.effectiveType.toUpperCase();
+        this.initialize();
+        this.startTracking();
+    }
 
-        document.getElementById('download-speed').textContent = downloadSpeed.toFixed(2);
-        document.getElementById('latency').textContent = latency;
-        document.getElementById('connection-type').textContent = 
-            `Connection type: ${connectionType} (${this.getNetworkGeneration()})`;
+    initialize() {
+        this.updateSpeed = this.updateSpeed.bind(this);
+        this.domElements = {
+            download: document.getElementById('download-speed'),
+            upload: document.getElementById('upload-speed'),
+            latency: document.getElementById('latency'),
+            connectionType: document.getElementById('connection-type'),
+            maxSpeed: document.getElementById('max-speed'),
+            lastUpdated: document.getElementById('last-updated')
+        };
+    }
 
-        // Simulate upload speed measurement
-        this.estimateUploadSpeed();
+    startTracking() {
+        // Immediate first update
+        this.updateNetworkInfo();
+        
+        // Regular updates every 3 seconds
+        setInterval(() => this.updateNetworkInfo(), 3000);
+        
+        // Listen for network changes
+        this.connection.addEventListener('change', this.updateNetworkInfo.bind(this));
+    }
+
+    updateNetworkInfo() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        try {
+            this.updateDownloadSpeed();
+            this.updateLatency();
+            this.updateMetaInfo();
+            this.domElements.lastUpdated.textContent = `Last updated: ${timeString}`;
+        } catch (error) {
+            console.error('Error updating network info:', error);
+        }
+    }
+
+    updateDownloadSpeed() {
+        const rawSpeed = this.connection.downlink;
+        const formattedSpeed = rawSpeed ? 
+            `${this.roundToDecimal(rawSpeed, 2)} Mbps` : 
+            'Unavailable';
+        
+        this.domElements.download.textContent = formattedSpeed;
+    }
+
+    updateLatency() {
+        const rawLatency = this.connection.rtt;
+        const formattedLatency = rawLatency ? 
+            `${this.roundToNearest(rawLatency, 25)} ms` : 
+            'Unavailable';
+        
+        this.domElements.latency.textContent = formattedLatency;
+    }
+
+    updateMetaInfo() {
+        const formattedType = this.connection.effectiveType.toUpperCase();
+        const maxSpeed = this.connection.downlinkMax ? 
+            `${this.connection.downlinkMax} Mbps*` : 
+            'Calculating...';
+        
+        this.domElements.connectionType.textContent = 
+            `Connection type: ${formattedType} (${this.getNetworkGeneration()})`;
+        
+        this.domElements.maxSpeed.textContent = 
+            `Max theoretical speed: ${maxSpeed}`;
     }
 
     getNetworkGeneration() {
         const speed = this.connection.downlink;
-        if (speed >= 100) return '5G';
+        if (!speed) return 'Unknown';
+        
+        if (speed >= 100) return '5G+';
         if (speed >= 30) return '4G LTE';
         if (speed >= 10) return '4G';
         if (speed >= 3) return '3G';
-        return '2G';
+        return '2G/EDGE';
     }
 
-    animateMetricUpdate() {
-        const cards = document.querySelectorAll('.metric-card');
-        cards.forEach(card => {
-            card.style.transform = 'translateY(-5px)';
-            setTimeout(() => {
-                card.style.transform = 'translateY(0)';
-            }, 300);
-        });
+    roundToDecimal(value, decimals) {
+        return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
     }
 
-    async estimateUploadSpeed() {
-        try {
-            const startTime = Date.now();
-            const fileSize = 500000; // 500KB test payload
-            const dummyFile = new Blob([new ArrayBuffer(fileSize)], {type: 'application/octet-stream'});
-            
-            await fetch('https://httpbin.org/post', {
-                method: 'POST',
-                body: dummyFile,
-                mode: 'no-cors'
-            });
-
-            const duration = (Date.now() - startTime) / 1000;
-            const bitsLoaded = fileSize * 8;
-            const uploadSpeed = (bitsLoaded / duration / 1000000).toFixed(2);
-            
-            document.getElementById('upload-speed').textContent = uploadSpeed;
-        } catch (error) {
-            document.getElementById('upload-speed').textContent = 'ERR';
-        }
+    roundToNearest(value, multiple) {
+        return Math.round(value / multiple) * multiple;
     }
 
     handleUnsupportedBrowser() {
-        document.getElementById('connection-type').textContent = 
-            'Network API not supported - Switch to Chrome/Edge for full features';
-        document.querySelectorAll('.metric-value').forEach(el => {
-            el.textContent = '-';
+        this.domElements.connectionType.textContent = 
+            'Network info unavailable - Requires modern browser (Chrome/Edge)';
+        [this.domElements.download, this.domElements.upload].forEach(element => {
+            element.textContent = 'N/A';
         });
     }
 }
 
-// Initialize when page loads
-window.addEventListener('load', () => new NetworkMonitor());
+// Initialize when document loads
+document.addEventListener('DOMContentLoaded', () => new NetworkMonitor());
