@@ -3,21 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Speed Tracker</title>
+    <title>Real-Time Network Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Internet Speed Monitor</h1>
-    <div class="metrics">
-        <div class="metric">
-            <span class="label">Download Speed:</span>
-            <span class="value" id="download-speed">Unavailable</span>
+    <div class="container">
+        <h1><i class="fas fa-tachometer-alt"></i> Network Dashboard</h1>
+        
+        <div class="metrics-grid">
+            <div class="metric-card" id="download-card">
+                <div class="metric-header">
+                    <i class="fas fa-download"></i>
+                    <h2>Download</h2>
+                </div>
+                <div class="metric-value" id="download-speed">-</div>
+                <div class="metric-subtext">Mbps</div>
+            </div>
+
+            <div class="metric-card" id="upload-card">
+                <div class="metric-header">
+                    <i class="fas fa-upload"></i>
+                    <h2>Upload</h2>
+                </div>
+                <div class="metric-value" id="upload-speed">-</div>
+                <div class="metric-subtext">Mbps</div>
+            </div>
+
+            <div class="metric-card" id="latency-card">
+                <div class="metric-header">
+                    <i class="fas fa-signal"></i>
+                    <h2>Latency</h2>
+                </div>
+                <div class="metric-value" id="latency">-</div>
+                <div class="metric-subtext">ms</div>
+            </div>
         </div>
-        <div class="metric">
-            <span class="label">Latency:</span>
-            <span class="value" id="latency">Unavailable</span>
+
+        <div class="footer">
+            <div id="connection-type">Detecting network type...</div>
+            <div id="update-status">Last updated: Never</div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
