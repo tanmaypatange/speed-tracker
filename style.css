@@ -1,4 +1,3 @@
-/* (Keep the same CSS as previous answer, no changes needed) */
 * {
     margin: 0;
     padding: 0;
@@ -20,7 +19,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     width: 90%;
-    max-width: 800px;
+    max-width: 600px;
     position: relative;
 }
 
