@@ -1,83 +1,61 @@
-:root {
-    --primary: #2c3e50;
-    --secondary: #3498db;
-    --background: #f8f9fa;
-    --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background);
-    line-height: 1.6;
-    padding: 20px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 800px;
 }
 
 h1 {
     text-align: center;
-    color: var(--primary);
+    color: #1a73e8;
     margin-bottom: 2rem;
-    font-size: 2.5rem;
 }
 
-.metrics-grid {
+.stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 2rem;
 }
 
-.metric-card {
-    background: white;
-    border-radius: 12px;
+.stat-box {
+    background: #f8f9fa;
     padding: 1.5rem;
-    box-shadow: var(--card-shadow);
+    border-radius: 8px;
     text-align: center;
-    transition: transform 0.2s;
 }
 
-.metric-card:hover {
-    transform: translateY(-3px);
-}
-
-.metric-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-
-.metric-header i {
-    font-size: 1.5rem;
-    margin-right: 0.8rem;
-    color: var(--secondary);
-}
-
-.metric-value {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--primary);
+.stat-box h2 {
+    color: #666;
+    font-size: 1.2rem;
     margin-bottom: 0.5rem;
 }
 
-.metric-subtext {
+.stat-box p {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #1a73e8;
+}
+
+.note {
+    text-align: center;
+    margin-top: 1.5rem;
     color: #666;
     font-size: 0.9rem;
-}
-
-.network-info {
-    text-align: center;
-    padding: 1rem;
-    color: #666;
-    font-size: 0.95rem;
-    line-height: 1.8;
-}
-
-#connection-type {
-    font-weight: 600;
-    color: var(--primary);
 }
