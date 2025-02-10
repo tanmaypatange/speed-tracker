@@ -1,74 +1,124 @@
-// Create test file for download/upload measurements
-const createTestFile = (sizeMB) => {
-    const size = sizeMB * 1024 * 1024; // Convert MB to bytes
-    const data = new Uint8Array(size);
-    return new Blob([data], { type: 'application/octet-stream' });
+// Configuration
+const CONFIG = {
+    testInterval: 10000, // 10 seconds
+    download: {
+        url: 'https://sin-speed.hetzner.com/100MB.bin',
+        sizeMB: 100 // Actual file size
+    },
+    upload: {
+        url: 'https://speed.hetzner.de/',
+        sizeMB: 5
+    },
+    latency: {
+        url: 'https://www.google.com',
+        timeout: 5000
+    }
 };
 
-// Measure download speed
+// Connection status indicator
+const connectionStatus = document.getElementById('connectionStatus');
+
+// Create temporary upload file (in memory only)
+const createUploadFile = (sizeMB) => {
+    const size = sizeMB * 1024 * 1024;
+    return new Blob([new Uint8Array(size)], { type: 'application/octet-stream' });
+};
+
+// Measure download speed (no local storage)
 const measureDownload = async () => {
-    const testFile = createTestFile(1); // 1MB test file
-    const fileURL = URL.createObjectURL(testFile);
-    const startTime = Date.now();
+    const start = performance.now();
+    let bytesReceived = 0;
     
     try {
-        await fetch(fileURL);
-        const endTime = Date.now();
-        const duration = (endTime - startTime) / 1000; // in seconds
-        const speed = (1 * 8) / duration; // Convert MBps to Mbps (1MB * 8 = 8Mb)
-        return speed;
-    } finally {
-        URL.revokeObjectURL(fileURL);
+        // Add cache-buster to prevent cached results
+        const url = `${CONFIG.download.url}?rand=${Math.random()}`;
+        
+        const response = await fetch(url);
+        const reader = response.body.getReader();
+        
+        while(true) {
+            const { done, value } = await reader.read();
+            if(done) break;
+            bytesReceived += value.length;
+        }
+        
+        const duration = (performance.now() - start) / 1000;
+        return (bytesReceived * 8) / (1024 * 1024) / duration; // Mbps
+    } catch {
+        return 0;
     }
 };
 
-// Measure upload speed
+// Measure upload speed (clean memory afterwards)
 const measureUpload = async () => {
-    const testFile = createTestFile(0.5); // 0.5MB test file
+    const file = createUploadFile(CONFIG.upload.sizeMB);
     const formData = new FormData();
-    formData.append('file', testFile, 'test.bin');
+    formData.append('file', file, 'test.bin');
 
-    const startTime = Date.now();
+    const start = performance.now();
     
     try {
-        await fetch('https://httpbin.org/post', {
+        await fetch(CONFIG.upload.url, {
             method: 'POST',
-            body: formData
+            body: formData,
+            mode: 'no-cors'
         });
-        const endTime = Date.now();
-        const duration = (endTime - startTime) / 1000; // in seconds
-        const speed = (0.5 * 8) / duration; // Convert MBps to Mbps
-        return speed;
-    } catch (error) {
+        
+        const duration = (performance.now() - start) / 1000;
+        return (CONFIG.upload.sizeMB * 8) / duration; // Mbps
+    } catch {
         return 0;
+    } finally {
+        // Clean up FormData
+        formData.delete('file');
     }
 };
 
-// Measure latency
+// Measure latency with proper cleanup
 const measureLatency = async () => {
-    const startTime = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CONFIG.latency.timeout);
+
     try {
-        await fetch('https://httpbin.org/get', {
+        const start = performance.now();
+        await fetch(CONFIG.latency.url, {
             method: 'HEAD',
-            cache: 'no-cache'
+            mode: 'no-cors',
+            signal: controller.signal
         });
-        return Date.now() - startTime;
-    } catch (error) {
+        return Math.round(performance.now() - start);
+    } catch {
         return 0;
+    } finally {
+        clearTimeout(timeout);
     }
 };
 
-// Update display with new measurements
+// Update UI with connection status
+const updateConnectionStatus = (connected) => {
+    connectionStatus.classList.toggle('connected', connected);
+};
+
+// Validate results
+const sanitizeResults = (download, upload, latency) => {
+    return [
+        download < 1000 ? download : 0,  // Sanity check
+        upload < 1000 ? upload : 0,
+        latency < 10000 ? latency : 0
+    ];
+};
+
+// Update display
 const updateDisplay = (download, upload, latency) => {
     document.getElementById('downloadSpeed').textContent = 
-        download > 0 ? `${download.toFixed(2)} Mbps` : 'N/A';
+        download > 0 ? `${download.toFixed(2)} Mbps` : 'Error';
     document.getElementById('uploadSpeed').textContent = 
-        upload > 0 ? `${upload.toFixed(2)} Mbps` : 'N/A';
+        upload > 0 ? `${upload.toFixed(2)} Mbps` : 'Error';
     document.getElementById('latency').textContent = 
-        latency > 0 ? `${latency} ms` : 'N/A';
+        latency > 0 ? `${latency} ms` : 'Error';
 };
 
-// Main function that runs all tests
+// Main test runner
 const runSpeedTest = async () => {
     try {
         const [download, upload, latency] = await Promise.all([
@@ -76,12 +126,25 @@ const runSpeedTest = async () => {
             measureUpload(),
             measureLatency()
         ]);
-        updateDisplay(download, upload, latency);
-    } catch (error) {
+        
+        const [validDownload, validUpload, validLatency] = 
+            sanitizeResults(download, upload, latency);
+            
+        updateConnectionStatus(validDownload > 0 || validUpload > 0);
+        updateDisplay(validDownload, validUpload, validLatency);
+    } catch {
+        updateConnectionStatus(false);
         updateDisplay(0, 0, 0);
     }
 };
 
-// Run initial test and repeat every 5 seconds
-runSpeedTest();
-setInterval(runSpeedTest, 5000);
+// Initial run and interval
+const init = () => {
+    runSpeedTest();
+    setInterval(runSpeedTest, CONFIG.testInterval);
+    window.addEventListener('offline', () => updateConnectionStatus(false));
+    window.addEventListener('online', () => runSpeedTest());
+};
+
+// Start application
+init();
