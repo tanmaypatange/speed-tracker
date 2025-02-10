@@ -3,62 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Monitor</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --background: #f8f9fa;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 20px;
-            background: var(--background);
-        }
-        .metric {
-            background: white;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .value {
-            color: var(--secondary);
-            font-size: 1.5em;
-            margin-top: 5px;
-        }
-    </style>
+    <title>Live Speed Monitor</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Network Information API Demo</h1>
-    
-    <div class="metric">
-        <div>Connection Type:</div>
-        <div class="value" id="type"></div>
+    <div class="container">
+        <h1>Live Network Speed Monitor</h1>
+        <div class="stats">
+            <div class="stat-box">
+                <h2>Download Speed</h2>
+                <p id="downloadSpeed">0 Mbps</p>
+            </div>
+            <div class="stat-box">
+                <h2>Upload Speed</h2>
+                <p id="uploadSpeed">0 Mbps</p>
+            </div>
+            <div class="stat-box">
+                <h2>Latency</h2>
+                <p id="latency">0 ms</p>
+            </div>
+        </div>
+        <div class="note">
+            <p>Note: Speed updates every 5 seconds</p>
+        </div>
     </div>
-    
-    <div class="metric">
-        <div>Effective Type:</div>
-        <div class="value" id="effectiveType"></div>
-    </div>
-
-    <div class="metric">
-        <div>Downlink (Mbps):</div>
-        <div class="value" id="downlink"></div>
-    </div>
-
-    <div class="metric">
-        <div>Round Trip Time (ms):</div>
-        <div class="value" id="rtt"></div>
-    </div>
-
-    <div class="metric">
-        <div>Maximum Downlink:</div>
-        <div class="value" id="downlinkMax"></div>
-    </div>
-
     <script src="script.js"></script>
 </body>
 </html>
