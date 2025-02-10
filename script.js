@@ -1,96 +1,87 @@
-class NetworkMonitor {
-    constructor() {
-        this.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        
-        if (!this.connection) {
-            this.handleUnsupportedBrowser();
-            return;
-        }
+// Create test file for download/upload measurements
+const createTestFile = (sizeMB) => {
+    const size = sizeMB * 1024 * 1024; // Convert MB to bytes
+    const data = new Uint8Array(size);
+    return new Blob([data], { type: 'application/octet-stream' });
+};
 
-        this.initialize();
-        this.startMonitoring();
+// Measure download speed
+const measureDownload = async () => {
+    const testFile = createTestFile(1); // 1MB test file
+    const fileURL = URL.createObjectURL(testFile);
+    const startTime = Date.now();
+    
+    try {
+        await fetch(fileURL);
+        const endTime = Date.now();
+        const duration = (endTime - startTime) / 1000; // in seconds
+        const speed = (1 * 8) / duration; // Convert MBps to Mbps (1MB * 8 = 8Mb)
+        return speed;
+    } finally {
+        URL.revokeObjectURL(fileURL);
     }
+};
 
-    initialize() {
-        this.elements = {
-            type: document.getElementById('type'),
-            effectiveType: document.getElementById('effectiveType'),
-            downlink: document.getElementById('downlink'),
-            rtt: document.getElementById('rtt'),
-            downlinkMax: document.getElementById('downlinkMax')
-        };
+// Measure upload speed
+const measureUpload = async () => {
+    const testFile = createTestFile(0.5); // 0.5MB test file
+    const formData = new FormData();
+    formData.append('file', testFile, 'test.bin');
+
+    const startTime = Date.now();
+    
+    try {
+        await fetch('https://httpbin.org/post', {
+            method: 'POST',
+            body: formData
+        });
+        const endTime = Date.now();
+        const duration = (endTime - startTime) / 1000; // in seconds
+        const speed = (0.5 * 8) / duration; // Convert MBps to Mbps
+        return speed;
+    } catch (error) {
+        return 0;
     }
+};
 
-    startMonitoring() {
-        // Initial update
-        this.updateMetrics();
-        
-        // Set up periodic updates
-        this.interval = setInterval(() => this.updateMetrics(), 3000);
-        
-        // Listen for connection changes
-        this.connection.addEventListener('change', () => this.updateMetrics());
+// Measure latency
+const measureLatency = async () => {
+    const startTime = Date.now();
+    try {
+        await fetch('https://httpbin.org/get', {
+            method: 'HEAD',
+            cache: 'no-cache'
+        });
+        return Date.now() - startTime;
+    } catch (error) {
+        return 0;
     }
+};
 
-    updateMetrics() {
-        try {
-            // Per spec section 6.5: Downlink rounded to 25 kbps multiples
-            const downlink = this.connection.downlink.toFixed(2);
-            
-            // Per spec section 6.6: RTT rounded to 25 ms multiples
-            const rtt = Math.round(this.connection.rtt / 25) * 25;
+// Update display with new measurements
+const updateDisplay = (download, upload, latency) => {
+    document.getElementById('downloadSpeed').textContent = 
+        download > 0 ? `${download.toFixed(2)} Mbps` : 'N/A';
+    document.getElementById('uploadSpeed').textContent = 
+        upload > 0 ? `${upload.toFixed(2)} Mbps` : 'N/A';
+    document.getElementById('latency').textContent = 
+        latency > 0 ? `${latency} ms` : 'N/A';
+};
 
-            // Per spec section 6.7: Maximum downlink from connection table
-            const maxDownlink = this.getMaxDownlink();
-
-            this.elements.type.textContent = this.connection.type;
-            this.elements.effectiveType.textContent = this.connection.effectiveType;
-            this.elements.downlink.textContent = downlink;
-            this.elements.rtt.textContent = rtt;
-            this.elements.downlinkMax.textContent = maxDownlink;
-            
-        } catch (error) {
-            console.error('Error updating metrics:', error);
-        }
+// Main function that runs all tests
+const runSpeedTest = async () => {
+    try {
+        const [download, upload, latency] = await Promise.all([
+            measureDownload(),
+            measureUpload(),
+            measureLatency()
+        ]);
+        updateDisplay(download, upload, latency);
+    } catch (error) {
+        updateDisplay(0, 0, 0);
     }
+};
 
-    getMaxDownlink() {
-        if (!this.connection.downlinkMax) return 'N/A';
-        
-        // Per table in spec section 6.7
-        const speeds = {
-            'wifi': {
-                '802.11b': 11,
-                '802.11g': 54,
-                '802.11n': 600,
-                '802.11ac': 6933
-            },
-            'cellular': {
-                '2G': 0.384,
-                '3G': 2,
-                '4G': 100,
-                '5G': 1000
-            }
-        };
-        
-        return `${this.connection.downlinkMax} Mbps (${this.getGeneration()})`;
-    }
-
-    getGeneration() {
-        const speed = this.connection.downlinkMax;
-        if (speed >= 1000) return '5G+';
-        if (speed >= 100) return '4G/LTE';
-        if (speed >= 2) return '3G';
-        return '2G';
-    }
-
-    handleUnsupportedBrowser() {
-        document.body.innerHTML = `
-            <h1>Compatibility Error</h1>
-            <p>This browser doesn't support the Network Information API (Chrome/Edge required)</p>
-        `;
-    }
-}
-
-// Initialize when page loads
-window.addEventListener('load', () => new NetworkMonitor());
+// Run initial test and repeat every 5 seconds
+runSpeedTest();
+setInterval(runSpeedTest, 5000);
