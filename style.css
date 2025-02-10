@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -20,18 +20,34 @@ body {
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     width: 90%;
     max-width: 800px;
+    position: relative;
 }
 
 h1 {
     text-align: center;
     color: #1a73e8;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.connection-status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+}
+
+.connection-status.connected {
+    background: #34a853;
 }
 
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
+    margin: 2rem 0;
 }
 
 .stat-box {
@@ -39,23 +55,27 @@ h1 {
     padding: 1.5rem;
     border-radius: 8px;
     text-align: center;
+    transition: transform 0.2s;
+}
+
+.stat-box:hover {
+    transform: translateY(-2px);
 }
 
 .stat-box h2 {
     color: #666;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
 
 .stat-box p {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: bold;
     color: #1a73e8;
 }
 
 .note {
     text-align: center;
-    margin-top: 1.5rem;
     color: #666;
     font-size: 0.9rem;
 }
